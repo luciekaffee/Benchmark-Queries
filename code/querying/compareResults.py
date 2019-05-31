@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 from SPARQLWrapper import SPARQLWrapper, JSON
+import math
 
 class GoldLabelGetter:
 
@@ -107,22 +108,28 @@ class KGLabelGetter:
         self.yago = dict(zip(df['ID'].astype(int), df['YAGO']))
 
     def send_query(self, query, endpoint):
-        prefixes = 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>  PREFIX wdt: <http://www.wikidata.org/prop/direct/>  ' \
-                   'PREFIX wd: <http://www.wikidata.org/entity/>  PREFIX p: <http://www.wikidata.org/prop/> PREFIX ps: <http://www.wikidata.org/prop/statement/>' \
-                   ' PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX dbo: <http://dbpedia.org/ontology/> PREFIX dbp: <http://dbpedia.org/property/> ' \
-                   'PREFIX res: <http://dbpedia.org/resource/>'
-        query = prefixes + '\n' + query
         sparql = SPARQLWrapper(endpoint)
         sparql.setQuery(query)
         sparql.setReturnFormat(JSON)
-        return sparql.query().convert()
+        try:
+            result = sparql.query().convert()
+        except:
+            result = []
 
-    def get_answers(self, language, endpoint):
+        return result
+
+    def get_answers(self, language, kg, endpoint):
         answers = {}
-        for id, query in self.dbpedia.iteritems():
+        for id, query in kg.iteritems():
             answers[id] = []
-            if query == 'X':
+            if query == 'X' or not isinstance(query, basestring):
                 continue
+            if not 'PREFIX' in query:
+                prefixes = 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>  PREFIX wdt: <http://www.wikidata.org/prop/direct/>  ' \
+                           'PREFIX wd: <http://www.wikidata.org/entity/>  PREFIX p: <http://www.wikidata.org/prop/> PREFIX ps: <http://www.wikidata.org/prop/statement/>' \
+                           ' PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX dbo: <http://dbpedia.org/ontology/> PREFIX dbp: <http://dbpedia.org/property/> ' \
+                           'PREFIX res: <http://dbpedia.org/resource/> PREFIX yago: <http://dbpedia.org/class/yago/>'
+                query = prefixes + '\n' + query
             results = []
             if language == 'en':
                 results = self.send_query(query, endpoint)
@@ -130,8 +137,10 @@ class KGLabelGetter:
                 lang = '"' + language + '"'
                 query = query.replace('"en"', lang)
                 results = self.send_query(query, endpoint)
+            if not results:
+                continue
             for result in results["results"]["bindings"]:
-                if not ['label'] in result:
+                if not 'label' in result:
                     continue
                 else:
                     answers[id].append(result["label"]["value"])
@@ -139,9 +148,9 @@ class KGLabelGetter:
 
     def get_answers_wikidata(self, language, endpoint):
         answers = {}
-        for id, query in self.dbpedia.iteritems():
+        for id, query in self.wikidata.iteritems():
             answers[id] = []
-            if query == 'X':
+            if query == 'X' or not isinstance(query, basestring):
                 continue
             results = []
             if language == 'en':
@@ -150,6 +159,8 @@ class KGLabelGetter:
                 lang = '"' + language + '"'
                 query = query.replace('"en"', lang)
                 results = self.send_query(query, endpoint)
+            if not results:
+                continue
             for result in results["results"]["bindings"]:
                 if not 'itemLabel' in result:
                     continue
@@ -157,23 +168,24 @@ class KGLabelGetter:
                     answers[id].append(result["itemLabel"]["value"])
         return answers
 
-    def run(self):
-        kg_answers = {}
+    def get_results_en(self):
         # English
         print 'Get answers English'
         # DBpedia: http://node1.research.tib.eu:4001/sparql
-        dbpedia_en = self.get_answers('en', 'http://node1.research.tib.eu:4001/sparql')
+        dbpedia_en = self.get_answers('en', self.dbpedia, 'http://node1.research.tib.eu:4001/sparql')
         # Wikidata: http://node3.research.tib.eu:4010/sparql | https://query.wikidata.org/sparql
-        wikidata_en = self.get_answers_wikidata('en', 'http://node3.research.tib.eu:4010/sparql')
+        wikidata_en = self.get_answers_wikidata('en', 'https://query.wikidata.org/sparql')
         # MusicBrainz: http://node3.research.tib.eu:4012/sparql
-        musicbrainz_en = self.get_answers('en', 'http://node3.research.tib.eu:4012/sparql')
+        musicbrainz_en = self.get_answers('en', self.musicbrainz, 'http://node3.research.tib.eu:4012/sparql')
         # LinkedMDB: http://node4.research.tib.eu:11887/sparql
-        linkedmdb_en = self.get_answers('en', 'http://node4.research.tib.eu:11887/sparql')
+        #linkedmdb_en = self.get_answers('en', self.linkedmdb, 'http://node4.research.tib.eu:11887/sparql')
         # YAGO: http://node3.research.tib.eu:4011/sparql
-        yago_en = self.get_answers('en', 'http://node3.research.tib.eu:4011/sparql')
+        yago_en = self.get_answers('en', self.yago, 'http://node3.research.tib.eu:4011/sparql')
 
-        kg_answers['en'] = {'DBpedia': dbpedia_en, 'Wikidata': wikidata_en, 'MusicBrainz': musicbrainz_en, 'LinkedMDB': linkedmdb_en, 'YAGO': yago_en}
+        return {'DBpedia': dbpedia_en, 'Wikidata': wikidata_en, 'MusicBrainz': musicbrainz_en}
+                            #'LinkedMDB': linkedmdb_en, 'YAGO': yago_en}
 
+    def get_results_es(self):
         # Spanish
         print 'Get answers Spanish'
         # DBpedia: http://node1.research.tib.eu:4001/sparql
@@ -183,14 +195,17 @@ class KGLabelGetter:
         # MusicBrainz: http://node3.research.tib.eu:4012/sparql
         musicbrainz_es = self.get_answers('es', 'http://node3.research.tib.eu:4012/sparql')
         # LinkedMDB: http://node4.research.tib.eu:11887/sparql
-        linkedmdb_es = self.get_answers('es', 'http://node4.research.tib.eu:11887/sparql')
+        #linkedmdb_es = self.get_answers('es', 'http://node4.research.tib.eu:11887/sparql')
         # YAGO: http://node3.research.tib.eu:4011/sparql
         yago_es = self.get_answers('es', 'http://node3.research.tib.eu:4011/sparql')
 
-        kg_answers['es'] =  {'DBpedia': dbpedia_es, 'Wikidata': wikidata_es, 'MusicBrainz': musicbrainz_es, 'LinkedMDB': linkedmdb_es, 'YAGO': yago_es}
+        return {'DBpedia': dbpedia_es, 'Wikidata': wikidata_es, 'MusicBrainz': musicbrainz_es,
+                             'YAGO': yago_es}#, 'LinkedMDB': linkedmdb_es,}
 
+    def get_results_es(self):
         # Arabic
-        print 'Get answers Arabic'
+        print
+        'Get answers Arabic'
         # DBpedia: http://node1.research.tib.eu:4001/sparql
         dbpedia_ar = self.get_answers('ar', 'http://node1.research.tib.eu:4001/sparql')
         # Wikidata: http://node3.research.tib.eu:4010/sparql | https://query.wikidata.org/sparql
@@ -198,15 +213,23 @@ class KGLabelGetter:
         # MusicBrainz: http://node3.research.tib.eu:4012/sparql
         musicbrainz_ar = self.get_answers('ar', 'http://node3.research.tib.eu:4012/sparql')
         # LinkedMDB: http://node4.research.tib.eu:11887/sparql
-        linkedmdb_ar = self.get_answers('ar', 'http://node4.research.tib.eu:11887/sparql')
+        #linkedmdb_ar = self.get_answers('ar', 'http://node4.research.tib.eu:11887/sparql')
         # YAGO: http://node3.research.tib.eu:4011/sparql
         yago_ar = self.get_answers('ar', 'http://node3.research.tib.eu:4011/sparql')
 
-        kg_answers['ar'] = {'DBpedia': dbpedia_ar, 'Wikidata': wikidata_ar, 'MusicBrainz': musicbrainz_ar, 'LinkedMDB': linkedmdb_ar, 'YAGO': yago_ar}
+        return {'DBpedia': dbpedia_ar, 'Wikidata': wikidata_ar, 'MusicBrainz': musicbrainz_ar, 'YAGO': yago_ar}
+                            #,'LinkedMDB': linkedmdb_ar, }
 
+
+    def run(self):
+        kg_answers = {}
+        kg_answers['en'] = self.get_results_en()
+        #kg_answers['es'] = self.get_results_es()
+        #kg_answers['ar'] = self.get_results_ar()
+        print kg_answers['en']['Wikidata']
         return kg_answers
 
-class CompareLabels():
+class CompareLabels:
 
     def compareLists(self, a, b):
         counter = 0
@@ -219,24 +242,26 @@ class CompareLabels():
 
     def run(self, qald_answers_en, qald_answers_es, qald_answers_ar, kg_answers):
         result = {}
-        for name, kg in kg_answers['en']:
+        for name, kg in kg_answers['en'].iteritems():
             print name
             result[name] = {}
             for id, answer in qald_answers_en.iteritems():
-                kg_answer = kg[id]
+                if not int(id) in kg:
+                    continue
+                kg_answer = kg[int(id)]
                 # check if answers are the same
                 if set(kg_answer) == set(answer):
-                    if not 'correct' in result['name']:
-                        result['name']['correct'] = 1
+                    if not 'correct' in result[name]:
+                        result[name]['correct'] = 1
                     else:
-                        result['name']['correct'] += 1
+                        result[name]['correct'] += 1
                 # check if kg has more answers than qald
-                if len(kg_answer > answer):
+                if len(kg_answer) > len(answer):
                     if not 'length_more' in result[name]:
                         result[name]['length_more'] = 1
                     else:
                         result[name]['length_more'] += 1
-                print result
+        print result
 
 
 
