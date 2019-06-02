@@ -22,5 +22,5 @@ The data for the comparison is in the following files:
 ## Code
 The code is in the *code* folder. To run the code, execute the *code/run.py* file from inside the code folder. Following a brief description of the classes used in the run file.
 * *GoldLabelGetter*: The code will first run the DBpedia queries to get the answers based on the QALD queries.
-* *KGLabelGetter*: Gets the labels for all queries from the queries in the Query-translation.tsv file.
+* *KGLabelGetter*: Gets the labels for all queries from the queries in the Query-translation.tsv file. The endpoints are university internal, they need to be replaced. 
 * *CompareLabels*: With the list of all query results, the answers are compared to the answers based on the QALD dataset. 

@@ -189,44 +189,45 @@ class KGLabelGetter:
         # Spanish
         print 'Get answers Spanish'
         # DBpedia: http://node1.research.tib.eu:4001/sparql
-        dbpedia_es = self.get_answers('es', 'http://node1.research.tib.eu:4001/sparql')
+        dbpedia_es = self.get_answers('es', self.dbpedia, 'http://node1.research.tib.eu:4001/sparql')
         # Wikidata: http://node3.research.tib.eu:4010/sparql | https://query.wikidata.org/sparql
         wikidata_es = self.get_answers_wikidata('es', 'http://node3.research.tib.eu:4010/sparql')
         # MusicBrainz: http://node3.research.tib.eu:4012/sparql
-        musicbrainz_es = self.get_answers('es', 'http://node3.research.tib.eu:4012/sparql')
+        musicbrainz_es = self.get_answers('es', self.musicbrainz, 'http://node3.research.tib.eu:4012/sparql')
         # LinkedMDB: http://node4.research.tib.eu:11887/sparql
         #linkedmdb_es = self.get_answers('es', 'http://node4.research.tib.eu:11887/sparql')
         # YAGO: http://node3.research.tib.eu:4011/sparql
-        yago_es = self.get_answers('es', 'http://node3.research.tib.eu:4011/sparql')
+        yago_es = self.get_answers('es', self.yago,'http://node3.research.tib.eu:4011/sparql')
 
-        return {'DBpedia': dbpedia_es, 'Wikidata': wikidata_es, 'MusicBrainz': musicbrainz_es,
-                             'YAGO': yago_es}#, 'LinkedMDB': linkedmdb_es,}
+        return {'DBpedia': dbpedia_es, 'Wikidata': wikidata_es, 'MusicBrainz': musicbrainz_es}
+                             # 'YAGO': yago_es, 'LinkedMDB': linkedmdb_es,}
 
-    def get_results_es(self):
+    def get_results_ar(self):
         # Arabic
         print
         'Get answers Arabic'
         # DBpedia: http://node1.research.tib.eu:4001/sparql
-        dbpedia_ar = self.get_answers('ar', 'http://node1.research.tib.eu:4001/sparql')
+        dbpedia_ar = self.get_answers('ar', self.dbpedia, 'http://node1.research.tib.eu:4001/sparql')
         # Wikidata: http://node3.research.tib.eu:4010/sparql | https://query.wikidata.org/sparql
         wikidata_ar = self.get_answers_wikidata('ar', 'http://node3.research.tib.eu:4010/sparql')
         # MusicBrainz: http://node3.research.tib.eu:4012/sparql
-        musicbrainz_ar = self.get_answers('ar', 'http://node3.research.tib.eu:4012/sparql')
+        musicbrainz_ar = self.get_answers('ar', self.musicbrainz, 'http://node3.research.tib.eu:4012/sparql')
         # LinkedMDB: http://node4.research.tib.eu:11887/sparql
         #linkedmdb_ar = self.get_answers('ar', 'http://node4.research.tib.eu:11887/sparql')
         # YAGO: http://node3.research.tib.eu:4011/sparql
-        yago_ar = self.get_answers('ar', 'http://node3.research.tib.eu:4011/sparql')
+        yago_ar = self.get_answers('ar', self.yago, 'http://node3.research.tib.eu:4011/sparql')
 
-        return {'DBpedia': dbpedia_ar, 'Wikidata': wikidata_ar, 'MusicBrainz': musicbrainz_ar, 'YAGO': yago_ar}
-                            #,'LinkedMDB': linkedmdb_ar, }
+        return {'DBpedia': dbpedia_ar, 'Wikidata': wikidata_ar, 'MusicBrainz': musicbrainz_ar}
+                #'YAGO': yago_ar,'LinkedMDB': linkedmdb_ar, }
 
 
     def run(self):
         kg_answers = {}
         kg_answers['en'] = self.get_results_en()
-        #kg_answers['es'] = self.get_results_es()
-        #kg_answers['ar'] = self.get_results_ar()
-        print kg_answers['en']['Wikidata']
+        kg_answers['es'] = self.get_results_es()
+        kg_answers['ar'] = self.get_results_ar()
+        with open('all-query-results.json', 'w+') as outfile:
+            json.dump(kg_answers, outfile)
         return kg_answers
 
 class CompareLabels:

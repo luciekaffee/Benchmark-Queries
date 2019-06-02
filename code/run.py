@@ -16,4 +16,4 @@ with open('qald_answers_ar.json') as infile:
     qald_answers_ar = json.load(infile)
 
 kg_answers = kglg.run()
-results = cr.run(qald_answers_en, qald_answers_es, qald_answers_ar, kg_answers)
+#results = cr.run(qald_answers_en, qald_answers_es, qald_answers_ar, kg_answers)
