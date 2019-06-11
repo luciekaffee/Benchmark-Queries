@@ -53,10 +53,18 @@ def get_classes_kgs(kg, endpoint):
                        ' PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX dbo: <http://dbpedia.org/ontology/> PREFIX dbp: <http://dbpedia.org/property/> ' \
                        'PREFIX res: <http://dbpedia.org/resource/> PREFIX yago: <http://dbpedia.org/class/yago/>'
             query = prefixes + '\n' + query
-        q = query.replace('SELECT DISTINCT ?label', 'SELECT DISTINCT ?class').replace('; rdfs:label ?label. FILTER langMatches( lcase(lang(?label)), "en" )', '?uri rdf:type ?class .')
+        q = query.replace('SELECT DISTINCT ?label', 'SELECT DISTINCT ?class').replace('; rdfs:label ?label. FILTER langMatches( lcase(lang(?label)), "en" )', '. ?uri rdf:type ?class .')
+        q = q.replace('SELECT ?label', 'SELECT DISTINCT ?class').replace('?uri rdfs:label ?label. FILTER langMatches( lcase(lang(?label)), "eng" )', ' ?uri rdf:type ?class .')
+        #if not '. ?uri rdf:type ?class' in q or '.?uri rdf:type ?class' in q:
+         #   q = q.replace('?uri rdf:type ?class', '. ?uri rdf:type ?class' )
         q = q.replace('?uri rdfs:label ?label. FILTER langMatches( lcase(lang(?label)), "en" )', '?uri rdf:type ?class .')
+        q = q.replace('?uri rdfs:label ?label.', '?uri rdf:type ?class .').replace('GROUP BY ?label', 'GROUP BY ?class')
+        q = q.replace('purl:title ?label', 'rdf:type ?class').replace('foaf:name ?label', 'rdf:type ?label').replace('skos:altLabel ?label', 'rdf:type ?class')
+        q = q.replace('. .', '.').replace('..', '.')
         result = send_query(q, endpoint)
         if not result:
+            print q
+            print 'No results'
             continue
         for r in result["results"]["bindings"]:
             if not 'class' in r:
@@ -67,6 +75,16 @@ def get_classes_kgs(kg, endpoint):
 
 print 'Start DBpedia'
 classes['DBpedia'] = get_classes_kgs(dbpedia, 'http://node1.research.tib.eu:4001/sparql')
+
+print 'Start YAGO'
+classes['YAGO'] = get_classes_kgs(yago, 'http://node3.research.tib.eu:4011/sparql')
+
+print 'Start LinkedMDB'
+classes['linkedmdb'] = get_classes_kgs(linkedmdb, 'http://node4.research.tib.eu:11887/sparql')
+
+print 'Start MusicBrainz'
+classes['MusicBrainz'] = get_classes_kgs(musicbrainz, 'http://node3.research.tib.eu:4012/sparql')
+
 
 with open('classes.json', 'w+') as outfile:
     json.dump(classes, outfile)
