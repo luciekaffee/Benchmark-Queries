@@ -238,7 +238,7 @@ class KGLabelGetter:
         kg_answers['es'] = self.get_results_es()
         #kg_answers['ar'] = self.get_results_ar()
         kg_answers['hi'] = self.get_results_hi()
-        with open('all-query-results.json', 'w+') as outfile:
+        with open('hindi-dbpedia-query-results.json', 'w+') as outfile:
             json.dump(kg_answers, outfile)
         return kg_answers
 
