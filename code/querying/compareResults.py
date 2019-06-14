@@ -114,6 +114,7 @@ class KGLabelGetter:
         try:
             result = sparql.query().convert()
         except:
+            print query
             result = []
 
         return result
@@ -154,12 +155,9 @@ class KGLabelGetter:
             if query == 'X' or not isinstance(query, basestring):
                 continue
             results = []
-            if language == 'en':
-                results = self.send_query(query, endpoint)
-            else:
-                lang = '"' + language + '"'
-                query = query.replace('"en"', lang)
-                results = self.send_query(query, endpoint)
+            query = query.replace(' SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }', '. ?item rdfs:label ?itemLabel . FILTER(LANG(?itemLabel) = "' + language + '")')
+            query = query.replace('..', '.')
+            results = self.send_query(query, endpoint)
             if not results:
                 continue
             for result in results["results"]["bindings"]:
@@ -178,8 +176,8 @@ class KGLabelGetter:
         wikidata_en = self.get_answers_wikidata('en', 'https://query.wikidata.org/sparql')
         # MusicBrainz: http://node3.research.tib.eu:4012/sparql
         musicbrainz_en = self.get_answers('en', self.musicbrainz, 'http://node3.research.tib.eu:4012/sparql')
-        # LinkedMDB: http://node4.research.tib.eu:11887/sparql
-        linkedmdb_en = self.get_answers('en', self.linkedmdb, 'http://node4.research.tib.eu:11887/sparql')
+        # LinkedMDB: http://node3.research.tib.eu:11887/sparql
+        linkedmdb_en = self.get_answers('en', self.linkedmdb, 'http://node3.research.tib.eu:11887/sparql')
         # YAGO: http://node3.research.tib.eu:4011/sparql
         yago_en = self.get_answers('en', self.yago, 'http://node3.research.tib.eu:4011/sparql')
 
@@ -191,11 +189,11 @@ class KGLabelGetter:
         # DBpedia: http://node1.research.tib.eu:4001/sparql
         dbpedia_es = self.get_answers('es', self.dbpedia, 'http://node1.research.tib.eu:4001/sparql')
         # Wikidata: http://node3.research.tib.eu:4010/sparql | https://query.wikidata.org/sparql
-        wikidata_es = self.get_answers_wikidata('es', 'http://node3.research.tib.eu:4010/sparql')
+        wikidata_es = self.get_answers_wikidata('es', 'https://query.wikidata.org/sparql')
         # MusicBrainz: http://node3.research.tib.eu:4012/sparql
         musicbrainz_es = self.get_answers('es', self.musicbrainz, 'http://node3.research.tib.eu:4012/sparql')
-        # LinkedMDB: http://node4.research.tib.eu:11887/sparql
-        linkedmdb_es = self.get_answers('es', 'http://node4.research.tib.eu:11887/sparql')
+        # LinkedMDB: http://node3.research.tib.eu:11887/sparql
+        linkedmdb_es = self.get_answers('es', self.linkedmdb, 'http://node3.research.tib.eu:11887/sparql')
         # YAGO: http://node3.research.tib.eu:4011/sparql
         yago_es = self.get_answers('spa', self.yago,'http://node3.research.tib.eu:4011/sparql', 'eng')
 
@@ -203,27 +201,43 @@ class KGLabelGetter:
 
     def get_results_ar(self):
         # Arabic
-        print
-        'Get answers Arabic'
+        print 'Get answers Arabic'
         # DBpedia: http://node1.research.tib.eu:4001/sparql
         dbpedia_ar = self.get_answers('ar', self.dbpedia, 'http://node1.research.tib.eu:4001/sparql')
         # Wikidata: http://node3.research.tib.eu:4010/sparql | https://query.wikidata.org/sparql
-        wikidata_ar = self.get_answers_wikidata('ar', 'http://node3.research.tib.eu:4010/sparql')
+        wikidata_ar = self.get_answers_wikidata('ar', 'https://query.wikidata.org/sparql')
         # MusicBrainz: http://node3.research.tib.eu:4012/sparql
         musicbrainz_ar = self.get_answers('ar', self.musicbrainz, 'http://node3.research.tib.eu:4012/sparql')
-        # LinkedMDB: http://node4.research.tib.eu:11887/sparql
-        #linkedmdb_ar = self.get_answers('ar', 'http://node4.research.tib.eu:11887/sparql')
+        # LinkedMDB: http://node3.research.tib.eu:11887/sparql
+        linkedmdb_ar = self.get_answers('ar', self.linkedmdb, 'http://node3.research.tib.eu:11887/sparql')
         # YAGO: http://node3.research.tib.eu:4011/sparql
         yago_ar = self.get_answers('ara', self.yago, 'http://node3.research.tib.eu:4011/sparql', 'eng')
 
         return {'DBpedia': dbpedia_ar, 'Wikidata': wikidata_ar, 'MusicBrainz': musicbrainz_ar, 'YAGO': yago_ar,'LinkedMDB': linkedmdb_ar, }
+
+    def get_results_hi(self):
+        # Hindi
+        print 'Get answers Hindi'
+        # DBpedia: http://node1.research.tib.eu:4001/sparql
+        dbpedia_hi = self.get_answers('hi', self.dbpedia, 'http://node1.research.tib.eu:4001/sparql')
+        # Wikidata: http://node3.research.tib.eu:4010/sparql | https://query.wikidata.org/sparql
+        wikidata_hi = self.get_answers_wikidata('hi', 'https://query.wikidata.org/sparql')
+        # MusicBrainz: http://node3.research.tib.eu:4012/sparql
+        musicbrainz_hi = self.get_answers('hi', self.musicbrainz, 'http://node3.research.tib.eu:4012/sparql')
+        # LinkedMDB: http://node3.research.tib.eu:11887/sparql
+        linkedmdb_hi = self.get_answers('hi', self.linkedmdb, 'http://node3.research.tib.eu:11887/sparql')
+        # YAGO: http://node3.research.tib.eu:4011/sparql
+        yago_hi = self.get_answers('hin', self.yago, 'http://node3.research.tib.eu:4011/sparql', 'eng')
+
+        return {'DBpedia': dbpedia_hi, 'Wikidata': wikidata_hi, 'MusicBrainz': musicbrainz_hi, 'YAGO': yago_hi,'LinkedMDB': linkedmdb_hi, }
 
 
     def run(self):
         kg_answers = {}
         kg_answers['en'] = self.get_results_en()
         kg_answers['es'] = self.get_results_es()
-        kg_answers['ar'] = self.get_results_ar()
+        #kg_answers['ar'] = self.get_results_ar()
+        kg_answers['hi'] = self.get_results_hi()
         with open('all-query-results.json', 'w+') as outfile:
             json.dump(kg_answers, outfile)
         return kg_answers

@@ -30,9 +30,11 @@ for id, query in wikidata.iteritems():
     classes['wikidata'][id] = []
     if query == 'X' or not isinstance(query, basestring):
         continue
-    q = query.replace('itemLabel', 'class').replace('SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }', '?item wdt:P31 ?class .')
+    q = query.replace('itemLabel', 'class').replace('SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }', '. ?item wdt:P31 ?class .')
+    q = q.replace('..', '.').replace('. .', '.')
     result = send_query(q, 'https://query.wikidata.org/sparql')
     if not result:
+        print q
         continue
     for r in result["results"]["bindings"]:
         if not 'class' in r:
@@ -64,7 +66,6 @@ def get_classes_kgs(kg, endpoint):
         result = send_query(q, endpoint)
         if not result:
             print q
-            print 'No results'
             continue
         for r in result["results"]["bindings"]:
             if not 'class' in r:
@@ -80,7 +81,7 @@ print 'Start YAGO'
 classes['YAGO'] = get_classes_kgs(yago, 'http://node3.research.tib.eu:4011/sparql')
 
 print 'Start LinkedMDB'
-classes['linkedmdb'] = get_classes_kgs(linkedmdb, 'http://node4.research.tib.eu:11887/sparql')
+classes['linkedmdb'] = get_classes_kgs(linkedmdb, 'http://node3.research.tib.eu:11887/sparql')
 
 print 'Start MusicBrainz'
 classes['MusicBrainz'] = get_classes_kgs(musicbrainz, 'http://node3.research.tib.eu:4012/sparql')
