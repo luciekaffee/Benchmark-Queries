@@ -32,6 +32,8 @@ for id, query in wikidata.iteritems():
         continue
     q = query.replace('itemLabel', 'class').replace('SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }', '. ?item wdt:P31 ?class .')
     q = q.replace('..', '.').replace('. .', '.')
+    if not 'LIMIT' in q:
+        q = q + ' LIMIT 10'
     result = send_query(q, 'https://query.wikidata.org/sparql')
     if not result:
         print q
@@ -63,6 +65,8 @@ def get_classes_kgs(kg, endpoint):
         q = q.replace('?uri rdfs:label ?label.', '?uri rdf:type ?class .').replace('GROUP BY ?label', 'GROUP BY ?class')
         q = q.replace('purl:title ?label', 'rdf:type ?class').replace('foaf:name ?label', 'rdf:type ?label').replace('skos:altLabel ?label', 'rdf:type ?class')
         q = q.replace('. .', '.').replace('..', '.')
+        if not 'LIMIT' in q:
+            q = q + ' LIMIT 10'
         result = send_query(q, endpoint)
         if not result:
             print q
@@ -87,7 +91,7 @@ print 'Start MusicBrainz'
 classes['MusicBrainz'] = get_classes_kgs(musicbrainz, 'http://node3.research.tib.eu:4012/sparql')
 
 
-with open('classes.json', 'w+') as outfile:
+with open('classes-10.json', 'w+') as outfile:
     json.dump(classes, outfile)
 
 

@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 from SPARQLWrapper import SPARQLWrapper, JSON
+
 import math
 
 class GoldLabelGetter:
