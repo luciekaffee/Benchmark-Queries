@@ -22,23 +22,23 @@ with open('../data/Query-translation.tsv') as infile:
     for line in infile:
         tmp = line.split('\t')
         queries[tmp[0].strip()] = {}
-        if not tmp[2] or tmp[2].lower() == 'x':
+        if not tmp[2] or tmp[2].lower().strip() == 'x':
             queries[tmp[0].strip()]['dbpedia'] = []
         else:
             queries[tmp[0].strip()]['dbpedia'] = tmp[2].strip()
-        if not tmp[3] or tmp[3].lower() == 'x':
+        if not tmp[3] or tmp[3].lower().strip() == 'x':
             queries[tmp[0].strip()]['musicbrainz'] = []
         else:
             queries[tmp[0].strip()]['musicbrainz'] = tmp[3].strip()
-        if not tmp[4] or tmp[4].lower() == 'x':
+        if not tmp[4] or tmp[4].lower().strip() == 'x':
             queries[tmp[0].strip()]['wikidata'] = []
         else:
             queries[tmp[0].strip()]['wikidata'] = tmp[4].strip()
-        if not tmp[5] or tmp[5].lower() == 'x':
+        if not tmp[5] or tmp[5].lower().strip() == 'x':
             queries[tmp[0].strip()]['yago'] = []
         else:
             queries[tmp[0].strip()]['yago'] = tmp[5].strip()
-        if not tmp[6] or tmp[6].lower() == 'x':
+        if not tmp[6] or tmp[6].lower().strip() == 'x':
             queries[tmp[0].strip()]['linkedmdb'] = []
         else:
             queries[tmp[0].strip()]['linkedmdb'] = tmp[6].strip()
@@ -109,4 +109,4 @@ for qid, qs in questions.iteritems():
         dataset[qid]['crowd_es'] = []
 
 print 'generated dataset'
-json.dump(dataset, open('../dataset.json', 'w'))
+json.dump(dataset, open('../QALM.json', 'w'))
